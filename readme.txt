@@ -18,6 +18,16 @@ Map
 :add_to_taken_coordinate
 ----------------------------
 
+----------------------------
+Order
+----------------------------
+@item
+@total_price
+
+:add_item
+:calculate_fee
+----------------------------
+
 seperti kita ketahui bahwa store ,driver ,user akan ditempatkan maka kita membuat 1 kelas untuk di implementasi nantinya oleh kelas kelas yang bisa dialokasikan 
 
 
@@ -26,10 +36,32 @@ Placeable
 ----------------------------
 @x
 @y
+@coordinate
 
 :initialize
 :locate
+:coordinate
 ----------------------------
+
+dan sebuah kelas yang lebih advance yang mewarisi kelas Placeable, nantinya ini akan mempermudah dalam proses menentukan rute perjalanan dari satu koordinat ke koordinat lain , juga di kelas ini dapat kita tentukan pergerakan dari suatu koordinat yang boleh di lakukan, maka hanya ada up left right dan down
+
+
+----------------------------
+CoordinateInterface < Placeable
+----------------------------
+@map
+
+:initialize
+:up
+:have_up?
+:down
+:have_down?
+:left
+:have_left?
+:right
+:have_right?
+----------------------------
+
 
 
 
@@ -64,7 +96,7 @@ Store < Placeable
 ----------------------------
 
 
-kemudian kita butuk kelas Item juga
+kemudian kita butuh kelas Item juga
 
 ----------------------------
 Item
@@ -76,3 +108,36 @@ Item
 ----------------------------
 
 kita juga butuh kelas Router untuk mengarahkan jalan dari satu koordinat ke yang satu 
+
+----------------------------
+Router
+----------------------------
+@start_position
+@end_position
+@current_position
+@paths
+@distances
+
+:initialize
+:find_path
+
+private
+:has_possible_step?
+:possible_step
+----------------------------
+
+kemudian kelas untuk mengatur output in case order yang di simpan ke dalam file 
+
+----------------------------
+OutputController
+----------------------------
+
+----------------------------
+kemudian kelas untuk input in case data map ,driver ,store,user di input melalui file
+
+
+----------------------------
+InputController
+----------------------------
+
+----------------------------
