@@ -9,7 +9,10 @@ class Map
 		@height = height
 		@width = width
 		@taken_coordinate = []
-		@map_image = Array.new(height) {Array.new(width)}
+		@map_image = Array.new(height,".") 
+		@map_image.each do 
+			@map_image.push(Array.new(width,"."))
+			end
 		
 	end
 	
@@ -24,24 +27,39 @@ class Map
 	
 	
 	
-	
 	def generate_new_coordinate
 		coordinate = [].push(Random.new.rand(0..(@height-1))).push(Random.new.rand(0..(@width-1)))
 		while @taken_coordinate.include? (coordinate)
 				coordinate = [].push(Random.new.rand(0..(@height-1))).push(Random.new.rand(0..(@width-1)))
 			end
-		add_to_taken_coordinate(coordinate)
+		
 		coordinate
 	
 	end
 	
 	def show_map
-		
+		@map_image.each do |height|
+			height.each do |element|
+				puts element
+			end
+		end
 	
 	
 	end
 	
-	private
+	def add_to_map_image(object)
+		x,y=*object.coordinate
+		if(object.class == Driver)
+			@map_image[x][y] = "d"
+		end
+		if(object.class == Store)
+			@map_image[x][y] = "s"
+		end
+		if(object.class == User)
+			@map_image[x][y] = "u"
+		end
+	
+	end
 	
 	
 	def add_to_taken_coordinate(coordinate)
@@ -99,10 +117,13 @@ class Placeable
 end
 
 class CoordinateInterface < Placeable
+
+	attr_reader :coordinate , :map
 	
 	def initialize(coordinate,map)
 		@coordinate = coordinate
 		@map = map
+		
 	end
 	
 	
@@ -114,7 +135,8 @@ class CoordinateInterface < Placeable
 	
 	def have_up?
 		x,y= *(@coordinate)
-		x>0
+		
+		x > 0
 	end
 	
 	def left
@@ -138,7 +160,7 @@ class CoordinateInterface < Placeable
 	
 	def have_right?
 		x,y= *(@coordinate)
-		y<(@map.length - 1)
+		y<(@map.height - 1)
 	end
 
 	
@@ -173,10 +195,21 @@ class Store < Placeable
 	
 	def initialize (store_name)
 		@name = store_name
+		@item = []
 	end
 	
 	def add_item (item)
 		@item.push(item)
+	end
+	
+	def print_information
+		puts "Store - #{@name}"
+		puts "Location : #{@coordinate}"
+		puts "Item(s) available :"
+		@item.each_with_index do |item,number|
+			puts "#{number}. #{item.name} : Rp:#{item.price}"
+		end
+		
 	end
 	
 
@@ -225,58 +258,90 @@ class Router
 		@paths = []
 		@distances = []
 		@visited = []
+		@last_visited = [].push(start_position)
 		@current_position = @start_position
 		@map = map
 		
 	end
 	
 	
+	
 	def find_path
 		path = []
+		steps = []
 		distance = 0
+		flag = 0
 		
-		if has_possible_step?
+		#puts "i will find path from #{@start_position.coordinate} to  #{@end_position.coordinate}"
+		while has_possible_step?
 				
-				steps = possible_step
-				next_step = steps.pop
+				if flag == 1 
+					break
+				end
 				
-				if step == @end_position.coordinate
-					distance++;
-					@paths.push(path)
+				
+				steps.clear
+				steps = possible_step	# sort dulu harusnya semua steps jadi biar dia ambil langkah paling dekat dlu ke tujun
+										# ini dia malah keliling gajelas terkadang 
+				
+				#puts "i am looping , here possible step from my current "
+				#steps.each do |a|
+				#puts "#{a}"
+				#end
+				
+				
+				
+				
+				while !(steps.empty?)
+				next_step = steps[0]
+				#puts "i choose #{next_step} and my last step is #{@last_visited.last}"	#pilih terdekat seharusnya
+				
+				if next_step == @end_position.coordinate
+					
+					if distance == 0		#flag untuk kalau hanya satu step langsung sampai,udah jelas shortest path , gausa kumpuli path lain 
+						flag = 1		
+					end
+					path.push(next_step)
+					distance += 1
+					@paths.push(path.drop(0))
+					@last_visited.clear
+					@last_visited = [].push(start_position.coordinate)
 					@distances.push(distance)
 					@current_position = @start_position
 					distance = 0
 					path.clear
+					#puts "i got finish"
+					break
 					
 				
 				elsif !(@visited.include?(next_step))
 					@visited.push(next_step)
-					distance++;
+					distance += 1
 					path.push(next_step)
+					@last_visited.push(next_step)
 					@current_position.coordinate = next_step
+					break
 					
 					
 				
-				elsif @visited.last == next_step
+				elsif @last_visited.last == next_step 	#untuk mundur
+					
+					@last_visited.pop
 					path.pop
-					distance--;
+					distance--
 					@current_position.coordinate == next_step
-					
+					break
 				
 				
-				elsif steps.empty?
-				
-				else
 				
 				
 				end
 				
 				
-			
-			
+				end
+				
 		
 		
-		else
 		
 		
 		end
@@ -284,11 +349,13 @@ class Router
 		
 	end
 	
+	
+	
 	def has_possible_step?
-		(@current_position.have_up? and !(map.taken_coordinate.include?(@current_position.up)) ) or 
-		(@current_position.have_down? and !(map.taken_coordinate.include?(@current_position.down)) ) or 
-		(@current_position.have_left? and !(map.taken_coordinate.include?(@current_position.left)) ) or 
-		(@current_position.have_right? and !(map.taken_coordinate.include?(@current_position.right)) )
+		(@current_position.have_up? and ( !(@map.taken_coordinate.include?(@current_position.up)) or   (@current_position.up == @end_position.coordinate)     ) and (!(@visited.include?(@current_position.up))   or  @last_visited.last == @current_position.up  ) )or 
+		(@current_position.have_down? and ( !(@map.taken_coordinate.include?(@current_position.down)) or   (@current_position.down == @end_position.coordinate)     ) and (!(@visited.include?(@current_position.down))   or  @last_visited.last == @current_position.down  ) ) or 
+		(@current_position.have_left? and ( !(@map.taken_coordinate.include?(@current_position.left)) or   (@current_position.left == @end_position.coordinate)     ) and (!(@visited.include?(@current_position.left))   or  @last_visited.last == @current_position.left  ) ) or 
+		(@current_position.have_right? and ( !(@map.taken_coordinate.include?(@current_position.right)) or   (@current_position.right == @end_position.coordinate)     ) and (!(@visited.include?(@current_position.right))   or  @last_visited.last == @current_position.right  ) )
 		
 	end	
 	
@@ -296,19 +363,19 @@ class Router
 	def possible_step
 		steps = []
 		
-		if (@current_position.have_up? and !(map.taken_coordinate.include?(@current_position.up)) and !(blocked_step.include?(@current_position.up)) )
+		if (@current_position.have_up? and ( !(@map.taken_coordinate.include?(@current_position.up)) or   (@current_position.up == @end_position.coordinate)     ) and (!(@visited.include?(@current_position.up))   or  @last_visited.last == @current_position.up  ) )
 			steps.push(@current_position.up)
 		end
 		
-		if (@current_position.have_down? and !(map.taken_coordinate.include?(@current_position.down)) and !(blocked_step.include?(@current_position.down)))
+		if (@current_position.have_down? and ( !(@map.taken_coordinate.include?(@current_position.down)) or   (@current_position.down == @end_position.coordinate)     ) and (!(@visited.include?(@current_position.down))   or  @last_visited.last == @current_position.down  ) )
 			steps.push(@current_position.down)
 		end
 		
-		if (@current_position.have_left? and !(map.taken_coordinate.include?(@current_position.left)) and !(blocked_step.include?(@current_position.left)))
+		if (@current_position.have_left? and ( !(@map.taken_coordinate.include?(@current_position.left)) or   (@current_position.left == @end_position.coordinate)     ) and (!(@visited.include?(@current_position.left))   or  @last_visited.last == @current_position.left  ) )
 			steps.push(@current_position.left)
 		end
 		
-		if (@current_position.have_right? and !(map.taken_coordinate.include?(@current_position.right)) and !(blocked_step.include?(@current_position.right)))
+		if (@current_position.have_right? and ( !(@map.taken_coordinate.include?(@current_position.right)) or   (@current_position.right == @end_position.coordinate)     ) and (!(@visited.include?(@current_position.right))   or  @last_visited.last == @current_position.right  ) )
 			steps.push(@current_position.right)
 		end
 		
@@ -316,25 +383,34 @@ class Router
 		
 	
 	end
+	
+	#hanya test 
+	def show_all_rute
 		
-	def closest_step(coordinates)
+		
+		@distances.each.with_index(1) do |d,i|
+		
+		puts "the #{i} rute  has distance : #{d}"
+		end
 		
 		
+		@paths.each.with_index(1) do |path,i|
+		puts "Here the #{i} rute "
+		print "#{@start_position.coordinate} -"
+		path.each do |coordinate|
+			print "#{coordinate} - "
+		end
+		
+		
+		end
+	
 	end
-	
-	
-	
-	def move
 		
 	
-	end
-	
-	
-	def undo_move
-	
+	def has_path?
+		@paths.size > 0
 	
 	end
-	
 		
 		
 
@@ -344,6 +420,197 @@ class OutputController
 
 
 end
+
+
+module NameGenerator
+	Name = ["glien","rizky","nufi","prince","koko","paddy","dody","rommel","taro","boy","ivan","bimo","jovan","david","martin","juanda","daniel","yudhi"]
+	
+	def NameGenerator.generate 
+		new = Name[Random.new.rand(0..(Name.size - 1))]
+	end
+	
+end
+
+
+
+
+
+
+# Main Class Method
+
+
+
+def is_name_used?(name)
+	
+	@used_name.include?(name)
+	
+end
+
+def unuse_name(name)
+	@used_name.delete_at(@used_name.index(name))
+		
+end
+
+def generate_unused_name
+	name = NameGenerator::generate
+	while @used_name.include?(name)
+		name = NameGenerator::generate
+	end
+	@used_name.push(name)
+	name
+	
+end
+
+
+def create_default_store
+	store_names = ["Toko ku", "Toko mu" , "Toko nya"]
+	
+	store_names.each do |store_name|
+		store = Store.new(store_name)
+		store.locate(@map.generate_new_coordinate)
+		@map.add_to_taken_coordinate(store.coordinate)
+		@items.each do |item|
+			store.add_item(item)
+		
+		end
+		@stores.push(store)
+		
+	end
+	
+	
+
+end
+
+def create_item
+	
+
+end
+
+def create_default_driver(number_of_driver)
+	
+	number_of_driver.times do  
+		new_driver = generate_new_driver(generate_unused_name)
+		@drivers.push(new_driver)
+	end
+	
+	
+	
+end
+
+
+def print_all_driver
+	@drivers.each do |driver|
+	puts "driver name : #{driver.name} , location : #{driver.coordinate}  rating : #{driver.rating}"
+	
+	end
+
+end
+
+def generate_new_driver(driver_name)
+	
+	tried_coordinate = []
+	flag = 0
+	while flag != @stores.size
+	flag=0
+	coordinate = @map.generate_new_coordinate
+		while tried_coordinate.include?(coordinate)
+		coordinate = @map.generate_new_coordinate
+		end
+	driver = Driver.new(driver_name)
+	driver.locate(coordinate)
+	
+	@stores.each do |store|
+		router = Router.new(driver.coordinate,store.coordinate,@map)
+		router.find_path
+		if router.has_path?
+		flag += 1	
+		end
+		
+	
+	
+		
+	end
+	
+	
+	
+	end
+	tried_coordinate.push(coordinate)
+	@map.add_to_taken_coordinate(driver.coordinate)
+	driver
+	
+end
+
+def set_default_item
+	default_items = {"Milkita Candy" => 5000,"Martabak" => 16000,"Susu" => 7000, "Kopi"=>8500}
+	default_items.each do |item_name,item_price|
+		item = Item.new(item_name,item_price)
+		@items.push (item)
+		
+	end
+	
+	
+	
+end
+
+#only for test
+def print_all_item
+
+	@items.each do |item|
+	puts "#{item.name} : #{item.price}"
+	end
+
+end
+
+def print_all_store
+	@stores.each do |store|
+		store.print_information
+		
+	end
+
+end
+
+def set_user(name = "kylex",location=@map.generate_new_coordinate)
+	@user = User.new(name)
+	@user.locate(location)
+
+end
+
+def create_map(height=20,width=20)
+	@map = Map.new(height,width)
+end
+
+# Main Class 
+
+
+@used_name = []
+@map
+@drivers = []
+@user
+@items = []
+@stores = []
+
+#default case 
+
+#create  map , default = 20x20
+create_map
+#set default item for store
+set_default_item
+#create store
+create_default_store
+#create drivers
+create_default_driver(5)
+#set user 
+set_user
+#cek
+print_all_driver
+#cek store dan item
+print_all_store
+#show_map
+@map.show_map
+
+
+
+
 
 
 
