@@ -16,6 +16,7 @@ Map
 :in_area?
 :generate_new_coordinate
 :add_to_taken_coordinate
+
 ----------------------------
 
 ----------------------------

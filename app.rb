@@ -3,16 +3,14 @@ class Map
 	attr_reader :height
 	attr_reader :width
 	attr_reader :taken_coordinate
+	attr_reader :map_image
 	
 	
 	def initialize (height,width)
 		@height = height
 		@width = width
 		@taken_coordinate = []
-		@map_image = Array.new(height,".") 
-		@map_image.each do 
-			@map_image.push(Array.new(width,"."))
-			end
+		@map_image = Array.new(height) {(Array.new(width," . "))}
 		
 	end
 	
@@ -20,12 +18,8 @@ class Map
 	def in_area? (coordinate)
 		x,y = *coordinate
 		x >= 0 && x < height && y >= 0 && y  < width
-		
-		
 	
 	end
-	
-	
 	
 	def generate_new_coordinate
 		coordinate = [].push(Random.new.rand(0..(@height-1))).push(Random.new.rand(0..(@width-1)))
@@ -37,27 +31,24 @@ class Map
 	
 	end
 	
-	def show_map
-		@map_image.each do |height|
-			height.each do |element|
-				puts element
-			end
-		end
 	
+	def add_to_map_image(object)
+		
+		if(object.class == Driver)
+			@map_image[object.x][object.y] = " d "
+		end
+		if(object.class == Store)
+			@map_image[object.x][object.y] = " s "
+		end
+		if(object.class == User)
+			@map_image[object.x][object.y] = " u "
+		end
 	
 	end
 	
-	def add_to_map_image(object)
-		x,y=*object.coordinate
-		if(object.class == Driver)
-			@map_image[x][y] = "d"
-		end
-		if(object.class == Store)
-			@map_image[x][y] = "s"
-		end
-		if(object.class == User)
-			@map_image[x][y] = "u"
-		end
+	def remove_from_map_image(object)
+		@map_image[object.x][object.y] = " . "
+		
 	
 	end
 	
@@ -67,25 +58,66 @@ class Map
 	
 	end
 	
+	def remove_from_taken_coordinate(coordinate)
+		@taken_coordinate.delete_at(@taken_coordinate.index(coordinate))
+	
+	end
 	
 	
 	end
 	
 	
 class Order
-	attr_reader :item
-	attr_reader :total_price 
-	@total_price = 0.0
+
+	attr_reader :store,:driver ,:items,:total_price ,:route , :distance
+	
+	
+	
+	def initialize(store)
+		@store = store
+		@total_price = 0.0
+		@items = []
+		@distance = 0
+		@route = []
+	end
+	
+	
+	def add_route(route)
+		
+		
+		
+		route.each do |step|
+			@route.push(step)
+			@distance += 1
+		
+		end
+	
+	
+	end
+	
+	
+	def select_driver(driver)
+		@driver = driver
+	end
 	
 	
 	def add_item(item,count)
-		@item.push(item)
+		@items.push(item)
 		@total_price += (item.price * count )
 	end
 	
 	
-	def calculate_fee(unit_cost , distance)
+	def set_unit_cost(unit_cost)
+		@unit_cost = unit_cost
 	
+	end
+	
+	def calculate_fee
+		(@unit_cost * @distance)
+	end
+	
+	def calculate_total
+		@total_price += calculate_fee
 	end
 	
 
@@ -99,6 +131,7 @@ class Placeable
 	def initialize(coordinate)
 		@coordinate = coordinate
 		locate(coordinate)
+		
 	end
 	
 	def locate(coordinate)
@@ -123,6 +156,7 @@ class CoordinateInterface < Placeable
 	def initialize(coordinate,map)
 		@coordinate = coordinate
 		@map = map
+		@x,@y = *coordinate
 		
 	end
 	
@@ -191,25 +225,30 @@ class Item
 end
 
 class Store < Placeable
-	attr_reader :name, :item
+	attr_reader :name, :items
 	
 	def initialize (store_name)
 		@name = store_name
-		@item = []
+		@items = []
 	end
 	
 	def add_item (item)
-		@item.push(item)
+		@items.push(item)
 	end
 	
 	def print_information
 		puts "Store - #{@name}"
-		puts "Location : #{@coordinate}"
+		puts "Location : #{self.coordinate}"
 		puts "Item(s) available :"
-		@item.each_with_index do |item,number|
+		@items.each.with_index(1) do |item,number|
 			puts "#{number}. #{item.name} : Rp:#{item.price}"
 		end
 		
+	end
+	
+	def select_item_by_id(id)
+		index = id - 1 
+		@items[index]
 	end
 	
 
@@ -270,47 +309,40 @@ class Router
 		path = []
 		steps = []
 		distance = 0
-		flag = 0
+		found_path_flag = 0
 		
-		#puts "i will find path from #{@start_position.coordinate} to  #{@end_position.coordinate}"
+		
 		while has_possible_step?
 				
-				if flag == 1 
+				if found_path_flag == 1 
 					break
 				end
 				
 				
 				steps.clear
-				steps = possible_step	# sort dulu harusnya semua steps jadi biar dia ambil langkah paling dekat dlu ke tujun
-										# ini dia malah keliling gajelas terkadang 
-				
-				#puts "i am looping , here possible step from my current "
-				#steps.each do |a|
-				#puts "#{a}"
-				#end
-				
-				
-				
+				steps = possible_step
+									
 				
 				while !(steps.empty?)
-				next_step = steps[0]
-				#puts "i choose #{next_step} and my last step is #{@last_visited.last}"	#pilih terdekat seharusnya
+				next_step = best_step(steps)
+				
 				
 				if next_step == @end_position.coordinate
 					
-					if distance == 0		#flag untuk kalau hanya satu step langsung sampai,udah jelas shortest path , gausa kumpuli path lain 
-						flag = 1		
-					end
+					
+					found_path_flag = 1		
+					
 					path.push(next_step)
 					distance += 1
-					@paths.push(path.drop(0))
+					@paths=path.drop(0)
 					@last_visited.clear
 					@last_visited = [].push(start_position.coordinate)
-					@distances.push(distance)
+					@distances = distance
 					@current_position = @start_position
+					
 					distance = 0
 					path.clear
-					#puts "i got finish"
+					
 					break
 					
 				
@@ -324,7 +356,7 @@ class Router
 					
 					
 				
-				elsif @last_visited.last == next_step 	#untuk mundur
+				elsif @last_visited.last == next_step 	
 					
 					@last_visited.pop
 					path.pop
@@ -350,6 +382,33 @@ class Router
 	end
 	
 	
+	
+	
+	
+	
+	
+	
+	def best_step(steps)
+		
+		all_deltas = []
+		
+		
+		steps.each do |step|
+			
+			
+			step_x,step_y = *step
+			delta_x = (@end_position.x >= step_x ?  @end_position.x - step_x : step_x - @end_position.x ) #selisih
+			delta_y = (@end_position.y >= step_y ?  @end_position.y - step_y : step_y - @end_position.y ) #selisih
+			all_deltas.push(delta_x + delta_y)
+			
+		end
+		
+		
+		steps[all_deltas.index(all_deltas.min)]
+		
+		
+	
+	end
 	
 	def has_possible_step?
 		(@current_position.have_up? and ( !(@map.taken_coordinate.include?(@current_position.up)) or   (@current_position.up == @end_position.coordinate)     ) and (!(@visited.include?(@current_position.up))   or  @last_visited.last == @current_position.up  ) )or 
@@ -384,27 +443,6 @@ class Router
 	
 	end
 	
-	#hanya test 
-	def show_all_rute
-		
-		
-		@distances.each.with_index(1) do |d,i|
-		
-		puts "the #{i} rute  has distance : #{d}"
-		end
-		
-		
-		@paths.each.with_index(1) do |path,i|
-		puts "Here the #{i} rute "
-		print "#{@start_position.coordinate} -"
-		path.each do |coordinate|
-			print "#{coordinate} - "
-		end
-		
-		
-		end
-	
-	end
 		
 	
 	def has_path?
@@ -416,8 +454,52 @@ class Router
 
 end
 
-class OutputController
-
+module OutputController
+	
+	
+	def show_information(objects)
+		
+	end
+	
+	def show_driver_information(drivers)
+		drivers.each do |driver|
+		puts "Driver - #{driver.name} . Location : #{driver.coordinate}  Rating : #{driver.rating}"
+	
+		end
+	end
+	
+	def show_store_information(stores)
+		stores.each do |store|
+		puts "Store - #{store.name} . Location : #{store.coordinate}"
+		end
+	end
+	
+	def show_item_store_information(store)
+		
+		
+		puts "Item(s) available :"
+		store.item.each.with_index(1) do |item,number|
+			puts "#{number}. #{item.name} : Rp:#{item.price}"
+		end
+	end
+	
+	
+	def show_map_information(map)
+		map.map_image.each do |height|
+			height.each do |element|
+				print element
+			end
+			puts ""
+		end
+	
+	
+	end
+	
+	def show_order_information(order)
+		
+		
+	end
+	
 
 end
 
@@ -438,7 +520,7 @@ end
 
 # Main Class Method
 
-
+include OutputController
 
 def is_name_used?(name)
 	
@@ -451,12 +533,16 @@ def unuse_name(name)
 		
 end
 
+def use_name(name)
+	@used_name.push(name)
+end
+
 def generate_unused_name
 	name = NameGenerator::generate
 	while @used_name.include?(name)
 		name = NameGenerator::generate
 	end
-	@used_name.push(name)
+	use_name(name)
 	name
 	
 end
@@ -473,6 +559,7 @@ def create_default_store
 			store.add_item(item)
 		
 		end
+		@map.add_to_map_image(store)
 		@stores.push(store)
 		
 	end
@@ -490,6 +577,7 @@ def create_default_driver(number_of_driver)
 	
 	number_of_driver.times do  
 		new_driver = generate_new_driver(generate_unused_name)
+		@map.add_to_map_image(new_driver)
 		@drivers.push(new_driver)
 	end
 	
@@ -498,13 +586,7 @@ def create_default_driver(number_of_driver)
 end
 
 
-def print_all_driver
-	@drivers.each do |driver|
-	puts "driver name : #{driver.name} , location : #{driver.coordinate}  rating : #{driver.rating}"
-	
-	end
 
-end
 
 def generate_new_driver(driver_name)
 	
@@ -552,26 +634,14 @@ def set_default_item
 	
 end
 
-#only for test
-def print_all_item
 
-	@items.each do |item|
-	puts "#{item.name} : #{item.price}"
-	end
 
-end
-
-def print_all_store
-	@stores.each do |store|
-		store.print_information
-		
-	end
-
-end
 
 def set_user(name = "kylex",location=@map.generate_new_coordinate)
 	@user = User.new(name)
 	@user.locate(location)
+	@map.add_to_map_image(@user)
+	
 
 end
 
@@ -579,6 +649,49 @@ def create_map(height=20,width=20)
 	@map = Map.new(height,width)
 end
 
+def add_to_orders_history(order)
+	@orders_history.push(order)
+
+end
+
+
+def process_order(order)
+	router = Router.new(order.driver.coordinate,order.store.coordinate,@map)
+	router.find_path
+	route = router.paths
+	
+	order.add_route(route)
+	puts "-\tdriver (#{order.driver.name}) is on the way to store, start at #{order.driver.coordinate}"
+	route.each.with_index do |step,index|
+		if	index == (route.size - 1)
+			puts "-\tgo to #{step}, driver arrived at store (#{order.store.name})"
+		else
+			puts "-\tgo to #{step}"
+		end
+		
+	end 
+	
+	puts "-\tdriver has bought the item(s), start at #{order.store.coordinate}"
+	router = Router.new(order.store.coordinate,@user.coordinate,@map)
+	router.find_path
+	route = router.paths
+	order.add_route(route)
+	
+	route.each.with_index do |step,index|
+		if	index == (route.size - 1)
+			puts "-\tgo to #{step}, driver arrived at your place!"
+		else
+			puts "-\tgo to #{step}"
+		end
+		
+	end
+	
+	order.driver.rate(5)
+	
+	
+	
+	
+end
 # Main Class 
 
 
@@ -588,25 +701,18 @@ end
 @user
 @items = []
 @stores = []
+@orders_history = []  
 
 #default case 
 
-#create  map , default = 20x20
-create_map
-#set default item for store
-set_default_item
-#create store
-create_default_store
-#create drivers
-create_default_driver(5)
-#set user 
-set_user
-#cek
-print_all_driver
-#cek store dan item
-print_all_store
-#show_map
-@map.show_map
+
+
+
+
+
+
+
+
 
 
 
