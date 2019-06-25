@@ -6,9 +6,9 @@ class Map
 	attr_reader :map_image
 	
 	
-	def initialize (height,width)
-		@height = height
-		@width = width
+	def initialize (size)
+		@height = size
+		@width = size
 		@taken_coordinate = []
 		@map_image = Array.new(height) {(Array.new(width," . "))}
 		
@@ -69,7 +69,7 @@ class Map
 	
 class Order
 
-	attr_reader :store,:driver ,:items,:total_price ,:route , :distance
+	attr_reader :store,:driver ,:items,:amounts,:total_price ,:route , :distance ,:unit_cost, :fee
 	
 	
 	
@@ -79,6 +79,7 @@ class Order
 		@items = []
 		@distance = 0
 		@route = []
+		@amounts = []
 	end
 	
 	
@@ -98,12 +99,14 @@ class Order
 	
 	def select_driver(driver)
 		@driver = driver
+		@route.push(driver.coordinate)
 	end
 	
 	
-	def add_item(item,count)
+	def add_item(item,amount)
 		@items.push(item)
-		@total_price += (item.price * count )
+		@amounts.push(amount)
+		@total_price += (item.price * amount )
 	end
 	
 	
@@ -113,7 +116,7 @@ class Order
 	end
 	
 	def calculate_fee
-		(@unit_cost * @distance)
+		@fee = (@unit_cost * @distance)
 	end
 	
 	def calculate_total
@@ -311,7 +314,7 @@ class Router
 		distance = 0
 		found_path_flag = 0
 		
-		
+		#puts "i will find path from #{@start_position.coordinate} to  #{@end_position.coordinate}"
 		while has_possible_step?
 				
 				if found_path_flag == 1 
@@ -320,8 +323,16 @@ class Router
 				
 				
 				steps.clear
-				steps = possible_step
-									
+				steps = possible_step	# sort dulu harusnya semua steps jadi biar dia ambil langkah paling dekat dlu ke tujun
+										# ini dia malah keliling gajelas terkadang 
+				
+				#puts "i am looping , here possible step from my current "
+				#steps.each do |a|
+				#puts "#{a}"
+				#end
+				
+				
+				
 				
 				while !(steps.empty?)
 				next_step = best_step(steps)
@@ -342,7 +353,7 @@ class Router
 					
 					distance = 0
 					path.clear
-					
+					#puts "i got finish"
 					break
 					
 				
@@ -356,7 +367,7 @@ class Router
 					
 					
 				
-				elsif @last_visited.last == next_step 	
+				elsif @last_visited.last == next_step 	#untuk mundur
 					
 					@last_visited.pop
 					path.pop
@@ -443,6 +454,27 @@ class Router
 	
 	end
 	
+	#hanya test 
+	def show_all_rute
+		
+		
+		@distances.each.with_index(1) do |d,i|
+		
+		puts "the #{i} rute  has distance : #{d}"
+		end
+		
+		
+		@paths.each.with_index(1) do |path,i|
+		puts "Here the #{i} rute "
+		print "#{@start_position.coordinate} -"
+		path.each do |coordinate|
+			print "#{coordinate} - "
+		end
+		
+		
+		end
+	
+	end
 		
 	
 	def has_path?
@@ -457,28 +489,35 @@ end
 module OutputController
 	
 	
-	def show_information(objects)
+	def show_main_menu
+		puts "Menu :"
+		puts "1. Show Map"
+		puts "2. Order Food"
+		puts "3. View History"
+		puts "4. Exit"
+		
 		
 	end
 	
+	
 	def show_driver_information(drivers)
-		drivers.each do |driver|
-		puts "Driver - #{driver.name} . Location : #{driver.coordinate}  Rating : #{driver.rating}"
+		drivers.each.with_index(1) do |driver,id|
+		puts "#{id}.Driver - #{driver.name} . Location : #{driver.coordinate}  Rating : #{driver.rating}"
 	
 		end
 	end
 	
 	def show_store_information(stores)
-		stores.each do |store|
-		puts "Store - #{store.name} . Location : #{store.coordinate}"
+		stores.each.with_index(1) do |store,id|
+		puts "#{id}.#{store.name} . Location : #{store.coordinate}"
 		end
 	end
 	
 	def show_item_store_information(store)
 		
 		
-		puts "Item(s) available :"
-		store.item.each.with_index(1) do |item,number|
+		
+		store.items.each.with_index(1) do |item,number|
 			puts "#{number}. #{item.name} : Rp:#{item.price}"
 		end
 	end
@@ -496,7 +535,27 @@ module OutputController
 	end
 	
 	def show_order_information(order)
-		
+		puts "----- Order Information -----"
+		puts "Store : #{order.store.name}"
+		puts "Location : #{order.store.coordinate}"
+		puts "Item(s) bought :"
+		order.items.each.with_index do |item,index|
+			puts " - #{item.name} (#{order.amounts[index]}) : Rp.#{item.price * order.amounts[index]}"
+		end
+		puts "Driver : #{order.driver.name} from #{order.driver.coordinate}"
+		puts "Route taken : "
+		order.route.each.with_index do |step,index|
+			print "#{step} "
+			if index != order.route.size - 1
+				print "-> "
+			end
+		end
+		puts ""
+		puts "Distance : #{order.distance} (unit cost : #{order.unit_cost}) "
+		puts "Driver fee : #{order.fee}"
+		puts "Total price : Rp.#{order.total_price}"
+		puts "------------ End ------------"
+		delay_output(0.5)
 		
 	end
 	
@@ -514,6 +573,32 @@ module NameGenerator
 end
 
 
+module InputController
+
+	def get_user_input(max_range)
+		print '> '
+		min_range=1
+		
+		user_input = $stdin.gets.chomp.to_i
+		
+		while !user_input.between?(min_range,max_range)
+			warn "Invalid input. re-enter"
+			print '> '
+			user_input = $stdin.gets.chomp.to_i
+			
+		end
+		
+		clear_screen
+		user_input
+	end
+	
+	def press_enter_to_continue
+		print "Press Enter to continue.."
+		$stdin.gets
+		clear_screen
+	end
+
+end
 
 
 
@@ -521,6 +606,7 @@ end
 # Main Class Method
 
 include OutputController
+include InputController
 
 def is_name_used?(name)
 	
@@ -573,7 +659,9 @@ def create_item
 
 end
 
-def create_default_driver(number_of_driver)
+
+
+def create_random_driver(number_of_driver)
 	
 	number_of_driver.times do  
 		new_driver = generate_new_driver(generate_unused_name)
@@ -586,6 +674,16 @@ def create_default_driver(number_of_driver)
 end
 
 
+def show_order_history
+	if @orders_history.size > 0
+	@orders_history.each do |order|
+		show_order_information(order)
+	end
+	else
+		puts "No order record found."
+	end
+	
+end
 
 
 def generate_new_driver(driver_name)
@@ -612,11 +710,12 @@ def generate_new_driver(driver_name)
 	
 		
 	end
-	
+	tried_coordinate.push(coordinate)
 	
 	
 	end
-	tried_coordinate.push(coordinate)
+	
+	
 	@map.add_to_taken_coordinate(driver.coordinate)
 	driver
 	
@@ -645,8 +744,8 @@ def set_user(name = "kylex",location=@map.generate_new_coordinate)
 
 end
 
-def create_map(height=20,width=20)
-	@map = Map.new(height,width)
+def create_map(size=20)
+	@map = Map.new(size)
 end
 
 def add_to_orders_history(order)
@@ -654,28 +753,93 @@ def add_to_orders_history(order)
 
 end
 
+def set_order_driver_handler
+	puts "Select available driver :"
+	show_driver_information(@drivers)
+	driver_id = get_user_input(@drivers.size)
+	@order.select_driver(@drivers[driver_id-1])
+	
 
-def process_order(order)
-	router = Router.new(order.driver.coordinate,order.store.coordinate,@map)
+end
+
+
+
+def create_order_handler
+
+	puts "Select available store :"
+	show_store_information(@stores)
+	selected_store_id = get_user_input(@stores.size)
+	store = @stores[selected_store_id - 1]
+	@order = Order.new(store)
+	
+	other_item_choice = 1
+	
+	while other_item_choice == 1
+	
+	puts "Select available item :"
+	show_item_store_information(store)
+	selected_item_id = get_user_input(store.items.size)
+	
+	puts "Input amount (max:50):"
+	item_amount =  get_user_input(50)
+	@order.add_item(@order.store.select_item_by_id(selected_item_id),item_amount)
+	puts "Another item ?"
+	puts "1. Yes"
+	puts "2. No"
+	other_item_choice = get_user_input(2)
+	
+	
+	end
+	
+	
+	
+	
+
+end
+
+def delete_driver(driver)
+	@map.remove_from_map_image(driver)
+	@map.remove_from_taken_coordinate(driver.coordinate)
+	unuse_name(driver.name)
+	@drivers.delete_at(@drivers.index(driver))
+end
+
+def driver_evaluator(driver)
+	if driver.rating < 3
+		puts "The app is looking for drivers..."
+		delay_output(1)
+		delete_driver(driver)
+		create_random_driver(1)
+		
+		
+	end
+
+end
+
+
+
+def process_order
+	router = Router.new(@order.driver.coordinate,@order.store.coordinate,@map)
 	router.find_path
 	route = router.paths
 	
-	order.add_route(route)
-	puts "-\tdriver (#{order.driver.name}) is on the way to store, start at #{order.driver.coordinate}"
+	@order.add_route(route)
+	puts "-\tdriver (#{@order.driver.name}) is on the way to store, start at #{@order.driver.coordinate}"
 	route.each.with_index do |step,index|
+		
 		if	index == (route.size - 1)
-			puts "-\tgo to #{step}, driver arrived at store (#{order.store.name})"
+			puts "-\tgo to #{step}, driver arrived at store (#{@order.store.name})"
 		else
 			puts "-\tgo to #{step}"
 		end
-		
+		delay_output(0.4)
 	end 
-	
-	puts "-\tdriver has bought the item(s), start at #{order.store.coordinate}"
-	router = Router.new(order.store.coordinate,@user.coordinate,@map)
+	delay_output(1)
+	puts "-\tdriver has bought the item(s), start at #{@order.store.coordinate}"
+	router = Router.new(@order.store.coordinate,@user.coordinate,@map)
 	router.find_path
 	route = router.paths
-	order.add_route(route)
+	@order.add_route(route)
 	
 	route.each.with_index do |step,index|
 		if	index == (route.size - 1)
@@ -684,15 +848,58 @@ def process_order(order)
 			puts "-\tgo to #{step}"
 		end
 		
+		delay_output(0.4)
 	end
 	
-	order.driver.rate(5)
+	@order.calculate_total
 	
+	puts "Input driver rating (0-5):"
+	rating = get_user_input(5)
 	
+	@order.driver.rate(rating)
 	
 	
 end
+
+def print_usage
+	puts "Usage: app.rb "
+	puts "Usage: app.rb [n] [x] [y]"
+	puts "Usage: app.rb [filename]"
+	puts
+	puts "n \t: this is for map size n * n "
+	puts "x,y \t: this is for user location coordinate (x,y) "
+	puts "filename \t: this is for import all setting from file "
+	
+	
+	exit(1)
+end
+
+def clear_screen
+	system "clear"
+end	
+
+def delay_output(second)
+	system "sleep #{second}"
+end
+
+
+def default_case
+	#without argument
+	#create  map , default = 20x20
+	create_map
+	#set default item for store
+	set_default_item
+	#create store
+	create_default_store
+	#create drivers
+	create_random_driver(5)
+	#set user 
+	set_user
+
+end
+
 # Main Class 
+
 
 
 @used_name = []
@@ -702,10 +909,8 @@ end
 @items = []
 @stores = []
 @orders_history = []  
-
-#default case 
-
-
+@user_input 
+@order
 
 
 
@@ -713,15 +918,56 @@ end
 
 
 
+if ARGV.empty?
+	
+	default_case
+	
+elsif ARGV.size == 3
+
+
+elsif ARGV.size == 1
 
 
 
+else
+	print_usage
 
 
 
+end
 
 
-
-
+while true
+	show_main_menu
+	@user_input = get_user_input(4)
+	
+	if @user_input == 1
+		
+		show_map_information(@map)
+		press_enter_to_continue
+	
+	elsif @user_input == 2
+		create_order_handler
+		@order.set_unit_cost(500) # assume unit cost set default by application
+		set_order_driver_handler
+		process_order
+		show_order_information(@order)
+		driver_evaluator(@order.driver)
+		add_to_orders_history(@order)
+		
+		
+		
+		press_enter_to_continue
+	elsif @user_input == 3
+		show_order_history
+		press_enter_to_continue
+	else
+		
+		puts "Exiting.."
+		exit(1)
+	
+	
+	end
+	end
 
 
