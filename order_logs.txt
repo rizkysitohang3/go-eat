@@ -1,0 +1,80 @@
+----- Order Information -----
+Store : Toko mu
+Location : [2, 1]
+Item(s) bought :
+ - Martabak (2) : Rp.32000.0
+Driver : martin from [2, 2]
+Route taken : 
+[2, 2] -> [2, 1] -> [1, 1] -> [1, 0] 
+Distance : 3 (unit cost : 500) 
+Driver fee : 1500
+Total price : Rp.33500.0
+------------ End ------------
+
+----- Order Information -----
+Store : Toko mu
+Location : [2, 1]
+Item(s) bought :
+ - Martabak (2) : Rp.32000.0
+Driver : juanda from [0, 3]
+Route taken : 
+[0, 3] -> [1, 3] -> [2, 3] -> [2, 2] -> [2, 1] -> [1, 1] -> [1, 0] 
+Distance : 6 (unit cost : 500) 
+Driver fee : 3000
+Total price : Rp.35000.0
+------------ End ------------
+
+----- Order Information -----
+Store : Toko Bunga Tare
+Location : [8, 9]
+Item(s) bought :
+ - Melati (2) : Rp.12000.0
+Driver : Gliens from [4, 2]
+Route taken : 
+[4, 2] -> [5, 2] -> [6, 2] -> [7, 2] -> [8, 2] -> [8, 3] -> [8, 4] -> [8, 5] -> [8, 6] -> [8, 7] -> [7, 8] -> [7, 9] -> [8, 9] -> [7, 9] -> [6, 9] -> [5, 9] -> [4, 9] -> [3, 9] -> [2, 9] -> [1, 9] -> [1, 8] -> [1, 7] -> [1, 6] -> [1, 5] -> [1, 4] -> [1, 3] -> [1, 2] 
+Distance : 26 (unit cost : 500) 
+Driver fee : 13000
+Total price : Rp.25000.0
+------------ End ------------
+
+----- Order Information -----
+Store : Toko Bunga Tare
+Location : [8, 9]
+Item(s) bought :
+ - Mawar (3) : Rp.15000.0
+ - Melati (7) : Rp.42000.0
+Driver : Gliens from [4, 2]
+Route taken : 
+[4, 2] -> [5, 2] -> [6, 2] -> [7, 2] -> [8, 2] -> [8, 3] -> [8, 4] -> [8, 5] -> [8, 6] -> [8, 7] -> [7, 8] -> [7, 9] -> [8, 9] -> [7, 9] -> [6, 9] -> [5, 9] -> [4, 9] -> [3, 9] -> [2, 9] -> [1, 9] -> [1, 8] -> [1, 7] -> [1, 6] -> [1, 5] -> [1, 4] -> [1, 3] -> [1, 2] 
+Distance : 26 (unit cost : 500) 
+Driver fee : 13000
+Total price : Rp.70000.0
+------------ End ------------
+
+----- Order Information -----
+Store : Toko Bunga Tare
+Location : [8, 9]
+Item(s) bought :
+ - Melati (2) : Rp.12000.0
+ - Mawar (2) : Rp.10000.0
+Driver : Kylex from [7, 2]
+Route taken : 
+[7, 2] -> [8, 2] -> [8, 3] -> [8, 4] -> [8, 5] -> [8, 6] -> [8, 7] -> [7, 8] -> [7, 9] -> [8, 9] -> [7, 9] -> [6, 9] -> [5, 9] -> [4, 9] -> [3, 9] -> [2, 9] -> [1, 9] -> [1, 8] -> [1, 7] -> [1, 6] -> [1, 5] -> [1, 4] -> [1, 3] -> [1, 2] 
+Distance : 23 (unit cost : 500) 
+Driver fee : 11500
+Total price : Rp.33500.0
+------------ End ------------
+
+----- Order Information -----
+Store : Toko Bunga Tare
+Location : [8, 9]
+Item(s) bought :
+ - Melati (2) : Rp.12000.0
+Driver : Daniel from [1, 4]
+Route taken : 
+[1, 4] -> [2, 4] -> [3, 4] -> [4, 4] -> [5, 4] -> [6, 4] -> [7, 4] -> [8, 4] -> [8, 5] -> [8, 6] -> [8, 7] -> [7, 8] -> [7, 9] -> [8, 9] -> [7, 9] -> [6, 9] -> [5, 9] -> [4, 9] -> [3, 9] -> [2, 9] -> [1, 9] -> [1, 8] -> [1, 7] -> [1, 6] -> [1, 5] -> [1, 4] -> [1, 3] -> [1, 2] 
+Distance : 27 (unit cost : 500) 
+Driver fee : 13500
+Total price : Rp.25500.0
+------------ End ------------
+

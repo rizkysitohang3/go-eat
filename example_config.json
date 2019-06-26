@@ -1,0 +1,55 @@
+{
+	"map_size" : 10,
+	"user_location" : [1,2],
+	"driver" : [
+		{ "name" : "Kylex",
+			"location" : [7,2]
+		},
+		{ "name" : "Gliens",
+			"location" : [4,2]
+		},
+		{ "name" : "Taro",
+			"location" : [9,2]
+		},
+		{ "name" : "Alien",
+			"location" : [2,4]
+		},
+		{ "name" : "Ariana",
+			"location" : [4,1]
+		}
+		
+		],
+	"store" : [
+		{ "name":"Toko Buah Kylex",
+			"location" : [8,8] ,
+			"items" : [
+			{
+				"name" : "Jeruk",
+				"price" : 5000
+				},
+				{
+					"name" : "Mangga",
+					"price" : 6000
+					}
+			]
+		
+			},
+				{ "name":"Toko Bunga Tare",
+					"location" : [8,9],
+			"items" : [
+			{
+				"name" : "Mawar",
+				"price" : 5000
+				},
+				{
+					"name" : "Melati",
+					"price" : 6000
+					}
+			]
+		
+			}
+	]
+	
+	
+}
+	
