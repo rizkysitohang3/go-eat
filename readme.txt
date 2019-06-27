@@ -293,6 +293,20 @@ Name = [] : menyimpan koleksi nama yang tersedia
 NameGenerator::generate  : untuk menghasilkan nama acak dari koleksi nama 
 ----------------------------
 
+module NameController untuk menghandle penggunaan nama , agar tidak ada nama yang sama yang di generate 
+----------------------------
+NameGenerator
+----------------------------
+:is_name_used? : pengecekan apakah nama sudah ada dalam koleksi nama yang sudah digunakan
+:unuse_name : menghapus nama dari koleksi nama yang sudah digunakan
+:use_name : menambahkan nama ke dalam koleksi nama yang sudah digunakan
+:generate_unused_name : men-generate nama yang belum digunakan , nama acak dari module NameGenerator::generate akan dipastikan belum digunakan sebelum di generate 
+----------------------------
+
+
+
+
+
 module InputController yang mengontrol semua input user 
 ----------------------------
 InputController
@@ -376,6 +390,24 @@ MainHandler
 ----------------------------
 
 
+
+
+Atribut pada Main kelas
+
+@default_number_of_driver : menyimpan banyak driver untuk case default , mengubah ini akan mengubah jumlah driver yang di generate ketika default case (program dijalankan tanpa argumen)
+@default_number_of_store : menyimpan banyak store untuk case default , mengubah ini tidak akan mengubah jumlah store yang di generate ketika default case (program dijalankan tanpa argumen) karena pada soal , sudah ditetapkan 3 store default untuk sepanjang program berjalan, ini hanya menyimpan informasi saja
+@used_name : menyimpan nama nama driver yang sudah digunakan dalam bentuk koleksi
+@map : instansi map sepanjang jalannya program
+@drivers : menyimpan instansi semua driver yang tersedia dalam bentuk koleksi
+@user : instansi user 
+@default_items : menyimpan semua instansi item default (yang di set untuk default case ) dalam bentuk koleksi
+@stores : menyimpan semua instansi store yang tersedia dalam bentuk koleksi
+@user_input : sebagai penampung yang menyimpan input user 
+@order : menyimpan instansi order pada saat pembuatan order hingga proses order  selesai
+@order_history_filename : menyimpan informasi nama file yang digunakan untuk menyimpan history order , juga sebagai tempat dimana order dicetak ke file sesuai di soal + asumsi tambahan. ini lebih baik daripada menyimpan instansi order pada koleksi karena pada saat program dibuka kembali history akan ulang dari nol.
+
+
+
 Semua Asumsi tambahan :
 - File konfigurasi input menggunakan format json , ada example ketentuan yang digunakan
 - File konfigurasi input di asumsikan sesuai dengan format yang ditentukan , tak ada penambahan pengecekan pada file json sebelum di proses
@@ -391,9 +423,6 @@ Semua Asumsi tambahan :
 - driver dapat melewati titik user dan driver , tapi tidak boleh melewati titik store.
 - menu cancel ditambahkan pada saat proses order 
 - pengecekan input user dibuat 
-
-
-
 
 
 
