@@ -1138,6 +1138,49 @@ module MainHandler
 		end
 		
 		data = JSON.load file
+		
+		if !data.keys.include?("map_size") and  !data.keys.include?("driver") and !data.keys.include?("store")
+			puts "configuration invalid"
+			error_exit_program
+		else
+			if data['store'].class == Array
+				data['store'].each do |store|
+					if !store.keys.include?("name") and !store.keys.include?("location") and !store.keys.include?("items")
+						puts "configuration invalid on store "
+						error_exit_program
+					end
+				end
+			else
+				if !data['store'].keys.include?("name") and !data['store'].keys.include?("location") and !data['store'].keys.include?("items")
+						puts "configuration invalid on store "
+						error_exit_program
+				end
+			
+			
+			end
+			
+			if data['driver'].class == Array
+				data['driver'].each do |driver|
+					if !driver.keys.include?("name") and !driver.keys.include?("location") 
+						puts "configuration invalid on driver "
+						error_exit_program
+					end
+				end
+			else
+				if !data['driver'].keys.include?("name") and !data['driver'].keys.include?("location") 
+						puts "configuration invalid on driver "
+						error_exit_program
+				end
+			
+			
+			end
+			
+			
+			
+		
+		end
+		
+		
 		#create map first
 		map_size_checker(data['map_size'] , data["driver"].size , data["store"].size)
 		create_map(data['map_size'])
