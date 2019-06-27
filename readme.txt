@@ -410,7 +410,7 @@ Atribut pada Main kelas
 
 Semua Asumsi tambahan :
 - File konfigurasi input menggunakan format json , ada example ketentuan yang digunakan
-- File konfigurasi input di asumsikan sesuai dengan format yang ditentukan , tak ada penambahan pengecekan pada file json sebelum di proses
+- File konfigurasi input di asumsikan sesuai dengan format yang ditentukan , hanya ada pengecekan simple melalui hash keys pada file json sebelum di proses
 
 - OrderHistory diambil dari file Order_log (nama file ditentukan pada program) , maka semua orderHistory dapat ditampilkan sepanjang order pernah dibuat bukan sepanjang program berjalan saja
 - File hasil output order menggunakan format yang sama dengan cara menampilkan order di layar setelah order selesai, gunanya agar tampilan pada order history akan sama dengan tampilan order pada saat order selesai dibuat.
@@ -423,6 +423,19 @@ Semua Asumsi tambahan :
 - driver dapat melewati titik user dan driver , tapi tidak boleh melewati titik store.
 - menu cancel ditambahkan pada saat proses order 
 - pengecekan input user dibuat 
+
+
+
+Informasi Konfigurasi Json : 
+
+map_size : untuk n sebagai ukuran map (n x n) 
+user_location : untuk koordinat lokasi user
+driver : untuk objek driver yang terdiri dari nama dan lokasi , dapat dibuat array kalau lebih dari dua dan bisa hanya satu 
+store : untuk objek store yang terdiri dari nama dan lokasi dan item , dapat dibuat array kalau lebih dari dua dan bisa hanya satu ,  items pada store untuk objek item pada store juga terdiri dari nama dan harga , items dapat dibuat array kalau lebih dari satu dan bisa hanya satu 
+
+
+
+
 
 
 

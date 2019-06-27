@@ -1127,7 +1127,7 @@ module MainHandler
 	end
 	
 	
-	def with_filename_case(filename)
+def with_filename_case(filename)
 		require 'json'
 		if File::exist?(filename)
 			file = File.open(filename,"r")
@@ -1137,48 +1137,87 @@ module MainHandler
 		error_exit_program
 		end
 		
+		
 		data = JSON.load file
 		
-		if !data.keys.include?("map_size") and  !data.keys.include?("driver") and !data.keys.include?("store")
+		
+		if !(data.keys.include?("map_size")) or  !(data.keys.include?("driver")) or !(data.keys.include?("store")) or !(data.keys.include?("user_location"))
 			puts "configuration invalid"
 			error_exit_program
 		else
 			if data['store'].class == Array
-				data['store'].each do |store|
-					if !store.keys.include?("name") and !store.keys.include?("location") and !store.keys.include?("items")
+				data['store'].each do |store|					
+					if  !store.keys.include?("name") or !store.keys.include?("location") or !store.keys.include?("items") 
 						puts "configuration invalid on store "
 						error_exit_program
+					else
+						 if store["items"].class == Array 
+							store["items"].each do |item|
+								if !item.keys.include?("name") or !item.keys.include?("price")
+									puts "configuration invalid on item"
+									error_exit_program
+								end
+							
+							end
+							
+						 else
+							if !store["items"].keys.include?("name") or !store["items"].keys.include?("price")
+									puts "configuration invalid on item"
+									error_exit_program
+								end
+						 
+						 end
+					
 					end
 				end
 			else
-				if !data['store'].keys.include?("name") and !data['store'].keys.include?("location") and !data['store'].keys.include?("items")
+				if !data['store'].keys.include?("name") or !data['store'].keys.include?("location") or !data['store'].keys.include?("items")
 						puts "configuration invalid on store "
 						error_exit_program
+						
+					
+				else
+				
+				if data["store"]["items"].class == Array 
+							data["store"]["items"].each do |item|
+								if !item.keys.include?("name") or !item.keys.include?("price")
+									puts "configuration invalid on item"
+									error_exit_program
+								end
+							
+							end
+							
+						 else
+							if !data["store"]["items"].keys.include?("name") or !data["store"]["items"].keys.include?("price")
+									puts "configuration invalid on item"
+									error_exit_program
+								end
+					
 				end
+				
+			end
 			
 			
 			end
 			
 			if data['driver'].class == Array
 				data['driver'].each do |driver|
-					if !driver.keys.include?("name") and !driver.keys.include?("location") 
+					if !driver.keys.include?("name") or !driver.keys.include?("location") 
 						puts "configuration invalid on driver "
 						error_exit_program
 					end
 				end
 			else
-				if !data['driver'].keys.include?("name") and !data['driver'].keys.include?("location") 
+				if !data['driver'].keys.include?("name") or !data['driver'].keys.include?("location") 
 						puts "configuration invalid on driver "
 						error_exit_program
 				end
 			
 			
 			end
-			
-			
-			
-		
 		end
+			
+			
 		
 		
 		#create map first
@@ -1186,27 +1225,52 @@ module MainHandler
 		create_map(data['map_size'])
 		#create store and item next
 		
-		data["store"].each do |store|
+		if data["store"].class == Array
+			stores = data["store"]
+		
+		else
+			stores = [].push(data["store"])
+		
+		end
+		
+		
+		stores.each do |store|
 			items = []
-			store["items"].each do |item|
-				new_item = Item.new(item["name"],item["price"])
-				items.push(new_item)
+			if store["items"].class == Array
+					store_items = store["items"]
+			
+			else 
+			store_items = [].push(store["items"])
+			
 			end
+			
+			store_items.each do |item|
+			new_item = Item.new(item["name"],item["price"])
+			items.push(new_item)
+			end
+			
 			create_store(store["name"],items,store["location"])
 			
 		end
 		#create driver
-		data["driver"].each do |driver|
+		
+		if data["driver"].class == Array
+		
+			data_driver = data["driver"]
+		else
+			data_driver = [].push( data["driver"])
+		
+		end
+		
+		
+		data_driver.each do |driver|
 			new_driver = create_driver(driver["name"],driver["location"])
 			@drivers.push(new_driver)
 		end
 		
 		
 		#set user
-		
 		set_user(data["user_location"])
-		
-		
 		file.close
 	end
 	
